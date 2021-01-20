@@ -42,28 +42,30 @@ cursorBlink     .rs 1 ; Blink the cursor on the title screen? ($00 = do, $FF = d
 
 RESET:
 
-vblankwait1:
-	bit $2002
-	bpl vblankwait1
+VBlankWait1:
+	BIT $2002
+	BPL VBlankWait1
 	
-clearmemLoop:
-    lda #$00
-    sta $0000, x
-    sta $0100, x
-    sta $0300, x
-    sta $0400, x
-    sta $0500, x
-    sta $0600, x
-    sta $0700, x
-    lda #$FE
-    sta $0200, x
-    inx
-    bne clearmemLoop
+ClearMemLoop:
+    LDA #$00
+    STA $0000, x
+    STA $0100, x
+    STA $0300, x
+    STA $0400, x
+    STA $0500, x
+    STA $0600, x
+    STA $0700, x
+    LDA #$FE
+    STa $0200, x
+    INX
+    BNE ClearMemLoop
 	
-vblankwait2:
-	bit $2002
-	bpl vblankwait2
+VBlankWait2:
+	BIT $2002
+	BPL VBlankWait2
 
+    LDX #LOW(BGTitle)
+    LDY #HIGH(BGTitle)
     JSR LoadBG
     JSR LoadPal
 
@@ -116,17 +118,26 @@ vblankwait2:
     ;   / ____ \| |    | |__| |
     ;  /_/    \_\_|     \____/
 
+    ; Music Setup
     LDA #$FF ; NTSC Mode (#$00 for PAL)
     LDX #LOW(music_music_data)
     LDY #HIGH(music_music_data)
     JSR FamiToneInit
 
+    ; Play first song
     LDA #$00
     JSR FamiToneMusicPlay
+
+    ; SFX Setup
+    LDX #LOW(sounds)
+    LDY #HIGH(sounds)
+    JSR FamiToneSfxInit
 
 InfLoop:
     JMP InfLoop
 
+; X = #LOW(bg addr)
+; Y = #HIGH(bg addr)
 LoadBG:
     LDA $2002
     LDA #$20
@@ -134,9 +145,9 @@ LoadBG:
     LDA #$00
     STA $2006
 
-    LDA #LOW(Background)
+    TXA
     STA <pBgLow
-    LDA #HIGH(Background)
+    TYA
     STA <pBgHigh
 
     LDX #00
@@ -205,6 +216,11 @@ NMI:
     LDA #$FF ; FF = don't blink
     STA <cursorBlink
 
+    JSR FamiToneMusicStop
+    LDA #$00
+    LDX FT_SFX_CH0
+    JSR FamiToneSfxPlay
+
 .Blink:
     ; Blink cursor
     LDA <elapsed ; get the elapsed time
@@ -250,14 +266,21 @@ ReadJoy:
     .bank 1
     .org $E000
 
+    ; FamiTone library
 	.include "src/famitone4.asm"
 
-Background:
+    ; Title Background
+BGTitle:
     .incbin "res/title.nam"
 
+    ; Palettes
     .include "src/palettes.asm"
 
+    ; Music data
     .include "res/music.asm"
+
+    ; SFX data
+    .include "res/sfx.asm"
 
 ; VECTORS
 
