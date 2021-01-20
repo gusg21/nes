@@ -43,9 +43,9 @@ cursorBlink     .rs 1 ; Blink the cursor on the title screen? ($00 = do, $FF = d
 RESET:
 
 VBlankWait1:
-	BIT $2002
-	BPL VBlankWait1
-	
+    BIT $2002
+    BPL VBlankWait1
+    
 ClearMemLoop:
     LDA #$00
     STA $0000, x
@@ -59,10 +59,10 @@ ClearMemLoop:
     STa $0200, x
     INX
     BNE ClearMemLoop
-	
+    
 VBlankWait2:
-	BIT $2002
-	BPL VBlankWait2
+    BIT $2002
+    BPL VBlankWait2
 
     LDX #LOW(BGTitle)
     LDY #HIGH(BGTitle)
@@ -78,7 +78,7 @@ VBlankWait2:
 
 
     ; PPU setup
-	LDA #%10001000
+    LDA #%10001000
     STA $2000
     LDA #%00011110
     STA $2001
@@ -240,8 +240,8 @@ NMI:
     STA $2003
     LDA #$02
     STA $4014
-	
-	JSR FamiToneUpdate
+    
+    JSR FamiToneUpdate
 
     ; Count frames
     INC <elapsed
@@ -267,7 +267,7 @@ ReadJoy:
     .org $E000
 
     ; FamiTone library
-	.include "src/famitone4.asm"
+    .include "src/famitone4.asm"
 
     ; Title Background
 BGTitle:
