@@ -25,8 +25,6 @@ BUTTON_RIGHT  = 1 << 0
 
 ; LIBRARIES
 
-    .include "src/famitone4.asm"
-
 ; ZEROPAGE VARIABLES
 
     .rsset $0000
@@ -43,6 +41,29 @@ cursorBlink     .rs 1 ; Blink the cursor on the title screen? ($00 = do, $FF = d
     .org $C000
 
 RESET:
+
+vblankwait1:
+	bit $2002
+	bpl vblankwait1
+	
+clearmemLoop:
+    lda #$00
+    sta $0000, x
+    sta $0100, x
+    sta $0300, x
+    sta $0400, x
+    sta $0500, x
+    sta $0600, x
+    sta $0700, x
+    lda #$FE
+    sta $0200, x
+    inx
+    bne clearmemLoop
+	
+vblankwait2:
+	bit $2002
+	bpl vblankwait2
+
     JSR LoadBG
     JSR LoadPal
 
@@ -55,7 +76,7 @@ RESET:
 
 
     ; PPU setup
-    LDA #%10001000
+	LDA #%10001000
     STA $2000
     LDA #%00011110
     STA $2001
@@ -102,7 +123,6 @@ RESET:
 
     LDA #$00
     JSR FamiToneMusicPlay
-
 
 InfLoop:
     JMP InfLoop
@@ -168,8 +188,6 @@ ClearLocalOAM:
     RTS
 
 NMI:
-    JSR FamiToneUpdate
-
     ; Read Joypads to "buttons"
     JSR ReadJoy
 
@@ -206,6 +224,8 @@ NMI:
     STA $2003
     LDA #$02
     STA $4014
+	
+	JSR FamiToneUpdate
 
     ; Count frames
     INC <elapsed
@@ -229,6 +249,8 @@ ReadJoy:
 
     .bank 1
     .org $E000
+
+	.include "src/famitone4.asm"
 
 Background:
     .incbin "res/title.nam"
