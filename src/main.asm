@@ -31,6 +31,7 @@ BUTTON_RIGHT  = 1 << 0
 
 pBgLow          .rs 1 ; Pointer to the high and low background memory
 pBgHigh         .rs 1 ;
+pPal            .rs 1 ; Pointer to the palette we're loading in LoadPal
 buttons         .rs 1 ; Player 1's buttons
 elapsed         .rs 1 ; Frames
 cursorBlink     .rs 1 ; Blink the cursor on the title screen? ($00 = do, $FF = don't)
@@ -67,6 +68,8 @@ VBlankWait2:
     LDX #LOW(BGTitle)
     LDY #HIGH(BGTitle)
     JSR LoadBG
+
+    LDX palTitle
     JSR LoadPal
 
     ;   _____  _____  _    _
@@ -139,7 +142,6 @@ InfLoop:
 ; X = #LOW(bg addr)
 ; Y = #HIGH(bg addr)
 LoadBG:
-    LDA $2002
     LDA #$20
     STA $2006
     LDA #$00
@@ -150,13 +152,12 @@ LoadBG:
     TYA
     STA <pBgHigh
 
-    LDX #00
-    LDY #00
+    LDX #$00
+    LDY #$00
 
 .Loop:
     LDA [pBgLow], y
     STA $2007
-
 
     INY
     CPY #$00
@@ -168,21 +169,24 @@ LoadBG:
     BNE .Loop
     RTS
 
+; X = palette address to load
 LoadPal:
     LDA #$3F
     STA $2006
     LDA #$00
     STA $2006
 
-    LDX #00
+    STX <pPal
+    LDY #$00
 
 .Loop:
-    LDA palTitle, x
+    LDA [pPal], y
     STA $2007
 
-    INX
-    CPX #$20
+    INY
+    CPY #$20
     BNE .Loop
+    
     RTS
 
 ClearLocalOAM:
@@ -218,7 +222,7 @@ NMI:
 
     JSR FamiToneMusicStop
     LDA #$00
-    LDX FT_SFX_CH0
+    LDX #FT_SFX_CH0
     JSR FamiToneSfxPlay
 
 .Blink:
@@ -274,7 +278,7 @@ BGTitle:
     .incbin "res/title.nam"
 
     ; Palettes
-    .include "src/palettes.asm"
+    .include "res/palettes.asm"
 
     ; Music data
     .include "res/music.asm"
