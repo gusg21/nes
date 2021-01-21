@@ -31,7 +31,8 @@ BUTTON_RIGHT  = 1 << 0
 
 pBgLow          .rs 1 ; Pointer to the high and low background memory
 pBgHigh         .rs 1 ;
-pPal            .rs 1 ; Pointer to the palette we're loading in LoadPal
+pPalLow         .rs 1 ; Pointer to the palette we're loading in LoadPal
+pPalHigh        .rs 1 ;
 buttons         .rs 1 ; Player 1's buttons
 elapsed         .rs 1 ; Frames
 cursorBlink     .rs 1 ; Blink the cursor on the title screen? ($00 = do, $FF = don't)
@@ -69,7 +70,8 @@ VBlankWait2:
     LDY #HIGH(BGTitle)
     JSR LoadBG
 
-    LDX palTitle
+    LDX #LOW(palTitle)
+    LDY #HIGH(palTitle)
     JSR LoadPal
 
     ;   _____  _____  _    _
@@ -147,10 +149,8 @@ LoadBG:
     LDA #$00
     STA $2006
 
-    TXA
-    STA <pBgLow
-    TYA
-    STA <pBgHigh
+    STX <pBgLow
+    STY <pBgHigh
 
     LDX #$00
     LDY #$00
@@ -169,18 +169,21 @@ LoadBG:
     BNE .Loop
     RTS
 
-; X = palette address to load
+; X = #LOW(palette) address to load
+; Y = #HIGH(palette) address to load
 LoadPal:
     LDA #$3F
     STA $2006
     LDA #$00
     STA $2006
 
-    STX <pPal
+    STX <pPalLow
+    STY <pPalHigh
+    LDX #$00
     LDY #$00
 
 .Loop:
-    LDA [pPal], y
+    LDA [pPalLow], y
     STA $2007
 
     INY
