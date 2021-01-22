@@ -7,7 +7,7 @@
 
     .inesprg 1      ; Defines the number of 16kb PRG banks
     .ineschr 2      ; Defines the number of 8kb CHR banks
-    .inesmap 004    ; Defines the NES mapper
+    .inesmap 069    ; Defines the NES mapper
     .inesmir 1      ; Defines VRAM mirroring of banks
 
 ; DEFINES
@@ -92,6 +92,12 @@ VBlankWait2:
     STA $2006
     STA $2005
     STA $2005
+
+    ; FME-7 setup
+    LDA #%00001000
+    STA $8000
+    LDA #%00000000
+    STA $A000
 
     ; Sprite setup
     JSR ClearLocalOAM
@@ -231,7 +237,7 @@ NMI:
 
     LDA #%00000001
     STA $8000
-    LDA #%00000000
+    LDA #%00000001
     STA $A000
 
 .Blink:
