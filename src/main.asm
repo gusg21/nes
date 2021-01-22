@@ -5,10 +5,10 @@
 
 ; HEADER
 
-    .inesprg 1    ; Defines the number of 16kb PRG banks
-    .ineschr 1    ; Defines the number of 8kb CHR banks
-    .inesmap 0    ; Defines the NES mapper
-    .inesmir 1    ; Defines VRAM mirroring of banks
+    .inesprg 1      ; Defines the number of 16kb PRG banks
+    .ineschr 2      ; Defines the number of 8kb CHR banks
+    .inesmap 004    ; Defines the NES mapper
+    .inesmir 1      ; Defines VRAM mirroring of banks
 
 ; DEFINES
 
@@ -126,6 +126,7 @@ VBlankWait2:
     ; Music Setup
     LDA #$FF ; NTSC Mode (#$00 for PAL)
     LDX #LOW(music_music_data)
+    
     LDY #HIGH(music_music_data)
     JSR FamiToneInit
 
@@ -228,6 +229,11 @@ NMI:
     LDX #FT_SFX_CH0
     JSR FamiToneSfxPlay
 
+    LDA #%00000001
+    STA $8000
+    LDA #%00000000
+    STA $A000
+
 .Blink:
     ; Blink cursor
     LDA <elapsed ; get the elapsed time
@@ -300,4 +306,8 @@ BGTitle:
 
     .bank 2
     .org $0000
-    .incbin "res/graphics.chr"
+    .incbin "res/graphics1.chr"
+
+    .bank 3
+    .org $0000
+    .incbin "res/graphics2.chr"
